@@ -1,9 +1,12 @@
 import { GetTransactionsParamsType, TransactionType } from "@/types/interfaces";
 import axios from "axios";
+
+
 export interface GetTransactionsRes {
 	transactions: TransactionType[];
 	error: unknown;
 }
+
 const BASEURL = "http://localhost:8081";
 export const getAllTransactions = async (
 	query: GetTransactionsParamsType,
@@ -37,6 +40,4 @@ export const getAllTransactions = async (
 		};
 	}
 };
-
-
 

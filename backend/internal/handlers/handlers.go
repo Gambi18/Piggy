@@ -13,8 +13,6 @@ type Handler struct {
 	service *piggyservice.Service
 }
 
-
-
 func NewHandler(service *piggyservice.Service) *Handler {
 	return &Handler{service: service}
 }
@@ -35,9 +33,18 @@ func (h *Handler) CreateTransaction(c *gin.Context) {
 	c.JSON(http.StatusOK, transaction)
 }
 
-
 func (h *Handler) GetTransactions(c *gin.Context) {
-	transactions, err := h.service.GetTransactions(c)
+		type queryParams struct {
+		UserID string `form:"userId"`
+	}
+	var query queryParams
+
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	transactions, err := h.service.GetTransactions(c, query.UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -45,6 +52,26 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 
 	c.JSON(http.StatusOK, transactions)
 }
+
+func (h *Handler) GetUserBalance(c *gin.Context) {
+	type queryParams struct {
+		Username string `form:"username"`
+	}
+	var query queryParams
+
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.service.GetUserByUsername(c, query.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, user.Balance)
+}
+
 
 func (h *Handler) SignUp(c *gin.Context) {
 	var payload models.SignUpPayload

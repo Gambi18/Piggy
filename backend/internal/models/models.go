@@ -1,21 +1,23 @@
 package models
 
 type User struct {
-	ID       int32  `json:"id"`
+	ID       string `json:"id"`
 	Username string `json:"username"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
+	Balance  int32  `json:"balance"`
 }
 
 type CreateTransactionPayload struct {
-	Amount    string `json:"amount"`
+	UserID    string `json:"userId"`
+	Amount    int32  `json:"amount"`
 	Type      string `json:"type"`
 	Reason    string `json:"reason"`
 }
 
 type Transaction struct {
 	ID        *int32 `json:"id"`
-	Amount    string `json:"amount"`
+	Amount    int32  `json:"amount"`
 	Type      string `json:"type"`
 	Reason    string `json:"reason"`
 	CreatedAt string `json:"createdAt"`

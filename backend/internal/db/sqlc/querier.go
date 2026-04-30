@@ -6,12 +6,14 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
-	GetTransactions(ctx context.Context) ([]Transaction, error)
+	GetTransactions(ctx context.Context, userID pgtype.UUID) ([]Transaction, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 }
 

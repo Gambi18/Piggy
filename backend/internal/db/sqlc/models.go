@@ -10,16 +10,18 @@ import (
 
 type Transaction struct {
 	ID        int32            `json:"id"`
-	Amount    string           `json:"amount"`
+	UserID    pgtype.UUID      `json:"user_id"`
+	Amount    pgtype.Numeric   `json:"amount"`
 	Reason    *string          `json:"reason"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	Type      *string          `json:"type"`
 }
 
 type User struct {
-	ID       int32  `json:"id"`
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID       pgtype.UUID    `json:"id"`
+	Username string         `json:"username"`
+	Name     string         `json:"name"`
+	Email    string         `json:"email"`
+	Password string         `json:"password"`
+	Balance  pgtype.Numeric `json:"balance"`
 }

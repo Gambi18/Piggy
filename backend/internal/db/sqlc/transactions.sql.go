@@ -7,23 +7,32 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (amount, reason, type) VALUES ($1, $2, $3) RETURNING id, amount, reason, created_at, type
+INSERT INTO transactions (user_id, amount, reason, type) VALUES ($1, $2, $3, $4) RETURNING id, user_id, amount, reason, created_at, type
 `
 
 type CreateTransactionParams struct {
-	Amount string  `json:"amount"`
-	Reason *string `json:"reason"`
-	Type   *string `json:"type"`
+	UserID pgtype.UUID    `json:"user_id"`
+	Amount pgtype.Numeric `json:"amount"`
+	Reason *string        `json:"reason"`
+	Type   *string        `json:"type"`
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
-	row := q.db.QueryRow(ctx, createTransaction, arg.Amount, arg.Reason, arg.Type)
+	row := q.db.QueryRow(ctx, createTransaction,
+		arg.UserID,
+		arg.Amount,
+		arg.Reason,
+		arg.Type,
+	)
 	var i Transaction
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.Amount,
 		&i.Reason,
 		&i.CreatedAt,
@@ -33,14 +42,15 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (username, name, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, name, email, password
+INSERT INTO users (username, name, email, password, balance) VALUES ($1, $2, $3, $4, $5) RETURNING id, username, name, email, password, balance
 `
 
 type CreateUserParams struct {
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Username string         `json:"username"`
+	Name     string         `json:"name"`
+	Email    string         `json:"email"`
+	Password string         `json:"password"`
+	Balance  pgtype.Numeric `json:"balance"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -49,6 +59,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Name,
 		arg.Email,
 		arg.Password,
+		arg.Balance,
 	)
 	var i User
 	err := row.Scan(
@@ -57,16 +68,17 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Name,
 		&i.Email,
 		&i.Password,
+		&i.Balance,
 	)
 	return i, err
 }
 
 const getTransactions = `-- name: GetTransactions :many
-SELECT id, amount, reason, created_at, type FROM transactions
+SELECT id, user_id, amount, reason, created_at, type FROM transactions WHERE user_id = $1
 `
 
-func (q *Queries) GetTransactions(ctx context.Context) ([]Transaction, error) {
-	rows, err := q.db.Query(ctx, getTransactions)
+func (q *Queries) GetTransactions(ctx context.Context, userID pgtype.UUID) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, getTransactions, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +88,7 @@ func (q *Queries) GetTransactions(ctx context.Context) ([]Transaction, error) {
 		var i Transaction
 		if err := rows.Scan(
 			&i.ID,
+			&i.UserID,
 			&i.Amount,
 			&i.Reason,
 			&i.CreatedAt,
@@ -92,7 +105,7 @@ func (q *Queries) GetTransactions(ctx context.Context) ([]Transaction, error) {
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, name, email, password FROM users WHERE username = $1
+SELECT id, username, name, email, password, balance FROM users WHERE username = $1
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
@@ -104,6 +117,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Name,
 		&i.Email,
 		&i.Password,
+		&i.Balance,
 	)
 	return i, err
 }

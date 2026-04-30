@@ -20,6 +20,9 @@ export default function Home() {
 							text="100,000 CFA"
 						/>
 					</section>
+					<section className="flex justify-between">
+						<StatsCard title="Balance" text="53,000 CFA" />
+					</section>
 					<section className="flex gap-3">
 						<Button
 							text="Add Savings"

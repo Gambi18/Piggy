@@ -12,25 +12,13 @@ function Navbar() {
 					🐷 Piggy
 				</Link>
 				<nav className="flex items-center gap-6">
-					<ul className="flex gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
-						<li>
-							<Link
-								href="/transactions?type=withdrawal"
-								className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-							>
-								Withdrawals
-							</Link>
-						</li>
-						<li>
-							<Link
-								href="/transactions?type=saving"
-								className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-							>
-								Savings
-							</Link>
-						</li>
-					</ul>
 					<div className="flex items-center gap-4 text-sm font-medium">
+						<Link
+							href="/"
+							className=" hover:text-blue-700 text-slate-600 dark:text-slate-300 px-4 py-1.5 rounded-md transition-colors"
+						>
+							Home
+						</Link>
 						<Link
 							href="/login"
 							className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md transition-colors"

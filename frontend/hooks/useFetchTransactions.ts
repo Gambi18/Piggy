@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 export const useGetTransactions = (query: GetTransactionsParamsType) => {
 	const [transactions, setTransactions] = useState<TransactionType[]>([]);
 	useEffect(() => {
-		
 		const fetchTransactions = async () => {
 			const res = await getAllTransactions(query);
+			console.log(res);
 			setTransactions(res.transactions);
 		};
 

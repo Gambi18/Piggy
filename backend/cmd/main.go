@@ -57,7 +57,8 @@ func main() {
 	route.POST("/api/v1/transactions", handlers.CreateTransaction)
 	route.GET("/api/v1/transactions", handlers.GetTransactions) // Run application
 	route.POST("/api/v1/signup", handlers.SignUp)
-	route.POST("/api/v1/signin", handlers.Login)
+	route.POST("/api/v1/login", handlers.Login)
+	
 	fmt.Println("Server running on port 8081")
 	route.Run(":8081")
 }
