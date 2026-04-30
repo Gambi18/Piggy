@@ -1,6 +1,10 @@
 package models
 
 type User struct {
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
 }
 
 type CreateTransactionPayload struct {
@@ -21,3 +25,15 @@ const (
 	TypeSaving     = "saving"
 	TypeWithdrawal = "withdrawal"
 )
+
+type SignUpPayload struct {
+	Username string `json:"username"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type SignInPayload struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}

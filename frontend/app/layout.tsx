@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: "Track your savings and withdrawals",
 };
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +30,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-900">{children}</body>
+      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-900">
+        {children}
+        <ToastContainer />
+      </body>
     </html>
   );
 }

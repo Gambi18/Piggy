@@ -3,13 +3,15 @@ import { saveTransaction } from "@/api/create-transaction";
 import Button from "@/components/Button";
 import Navbar from "@/components/navbar";
 import { TransactionType } from "@/types/interfaces";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 function WithdrawPage() {
+	const router = useRouter();
 	const [amount, setAmount] = useState("");
 	const [reason, setReason] = useState("");
-	const handleWithdraw = () => {
+	const handleWithdraw = async () => {
 		console.log("Executed!");
 		const payload: TransactionType = {
 			amount,
@@ -17,12 +19,13 @@ function WithdrawPage() {
 			type: "withdrawal",
 			createdAt: Date(),
 		};
-		const res = saveTransaction(payload);
+		const res = await saveTransaction(payload);
 
 		console.log("Response from fetch: ", res);
 
 		if (res.success) {
 			toast("Withdrawal successful! Redirecting...");
+			router.push("/");
 		} else {
 			toast.error("Failed to withdraw money! Try again.");
 		}
@@ -65,7 +68,6 @@ function WithdrawPage() {
 					</form>
 				</div>
 			</main>
-			<ToastContainer />
 		</div>
 	);
 }

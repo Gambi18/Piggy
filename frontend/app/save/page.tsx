@@ -3,14 +3,16 @@ import { saveTransaction } from "@/api/create-transaction";
 import Button from "@/components/Button";
 import Navbar from "@/components/navbar";
 import { TransactionType } from "@/types/interfaces";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 function SavePage() {
+	const router = useRouter();
 	const [amount, setAmount] = useState("");
 	const [reason, setReason] = useState("");
 	// Handle save transaction
-	const handleSave = () => {
+	const handleSave = async () => {
 		console.log("Executed!");
 		const payload: TransactionType = {
 			amount,
@@ -18,15 +20,18 @@ function SavePage() {
 			type: "saving",
 			createdAt: Date(),
 		};
-		const res = saveTransaction(payload);
+		const res = await saveTransaction(payload);
 
 		console.log("Response from fetch: ", res);
 
 		if (res.success) {
 			toast("Saving action successful! Redirecting...");
+			router.push("/");
 		} else {
 			toast.error("Failed to save money! Try again.");
 		}
+
+
 	};
 
 	return (
@@ -68,7 +73,6 @@ function SavePage() {
 					</form>
 				</div>
 			</main>
-			<ToastContainer />
 		</div>
 	);
 }

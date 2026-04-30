@@ -1,6 +1,6 @@
 "use client";
 import StatsCard from "@/components/Card";
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/navmain";
 import TransactionsList from "@/components/TransactionsList";
 import Button from "@/components/Button";
 import { useGetTransactions } from "@/hooks/useFetchTransactions";

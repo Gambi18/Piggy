@@ -38,14 +38,14 @@ func main() {
 
 	// Initialize repo and apply migrations
 	ctx := context.Background()
-	dbUrl := "postgres://piggy:secret@127.0.0.1:5432/piggydb?sslmode=disable"
+	dbUrl := "postgres://admin:2323@localhost:5433/piggy?sslmode=disable"
 	dbConn, err := pgxpool.New(ctx, dbUrl)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("Database connection established!")
 	repostory := repo.NewRepository(dbConn)
-	if err :=repo.MigrateUp(dbUrl, "./internal/db/migrations", zerolog.Nop().With().Logger());err !=nil{
+	if err := repo.MigrateUp(dbUrl, "./internal/db/migrations", zerolog.Nop().With().Logger()); err != nil {
 		panic(err)
 	}
 
@@ -56,6 +56,8 @@ func main() {
 	// Define application endpoints
 	route.POST("/api/v1/transactions", handlers.CreateTransaction)
 	route.GET("/api/v1/transactions", handlers.GetTransactions) // Run application
-	fmt.Println("Server running on port 8080")
-	route.Run()
+	route.POST("/api/v1/signup", handlers.SignUp)
+	route.POST("/api/v1/signin", handlers.Login)
+	fmt.Println("Server running on port 8081")
+	route.Run(":8081")
 }

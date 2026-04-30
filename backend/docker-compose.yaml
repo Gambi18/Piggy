@@ -5,15 +5,15 @@ services:
     environment:
       POSTGRES_USER: piggy
       POSTGRES_PASSWORD: secret
-      POSTGRES_DB: piggydb
+      POSTGRES_DB: piggy
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U piggy -d piggydb" ]
+      test: [ "CMD-SHELL", "pg_isready -U piggy -d piggy" ]
       interval: 5s
       retries: 10
     ports:
-      - 5432:5432
+      - 5433:5432
   # api:
   #   build: .
   #   restart: unless-stopped

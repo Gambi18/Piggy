@@ -1,4 +1,4 @@
-import { TransactionType } from "@/types/interfaces";
+import { LoginType } from "@/types/interfaces";
 import axios from "axios";
 
 export interface ResponseType {
@@ -8,11 +8,11 @@ export interface ResponseType {
 
 const BASEURL = "http://localhost:8081";
 
-export const saveTransaction = async (payload: TransactionType) => {
-	console.log("Fetch function executed!");
+export const login = async (payload: LoginType) => {
+	console.log("Login function executed!");
 	const response: ResponseType = await axios
-		.post(BASEURL + "/api/v1/transactions", payload)
-		.then((res) => {
+		.post(BASEURL + "/api/v1/login", payload)
+		.then(() => {
 			return {
 				error: undefined,
 				success: true,

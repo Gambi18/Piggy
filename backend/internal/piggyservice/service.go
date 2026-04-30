@@ -2,6 +2,7 @@ package piggyservice
 
 import (
 	"context"
+	"fmt"
 
 	"piggy.com/internal/db/repo"
 	"piggy.com/internal/db/sqlc"
@@ -41,6 +42,42 @@ func (s *Service) GetTransactions(ctx context.Context) (*[]models.Transaction, e
 		transactions = append(transactions, *sqlCToAppTransaction(v))
 	}
 	return &transactions, nil
+}
+
+func (s *Service) SignUp(ctx context.Context, payload models.SignUpPayload) (*models.User, error) {
+	user, err := s.repo.Do().CreateUser(ctx, sqlc.CreateUserParams{
+		Username: payload.Username,
+		Name:     payload.Name,
+		Email:    payload.Email,
+		Password: payload.Password,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return sqlCToAppUser(user), nil
+}
+
+func (s *Service) Login(ctx context.Context, payload models.SignInPayload) (*models.User, error) {
+	user, err := s.repo.Do().GetUserByUsername(ctx, payload.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	// Simple password check (In a real app, use bcrypt)
+	if user.Password != payload.Password {
+		return nil, fmt.Errorf("invalid password")
+	}
+
+	return sqlCToAppUser(user), nil
+}
+
+func sqlCToAppUser(u sqlc.User) *models.User {
+	return &models.User{
+		ID:       u.ID,
+		Username: u.Username,
+		Name:     u.Name,
+		Email:    u.Email,
+	}
 }
 
 func sqlCToAppTransaction(t sqlc.Transaction) *models.Transaction {

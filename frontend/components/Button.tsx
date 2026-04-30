@@ -5,9 +5,15 @@ export interface BtnProps {
 	onClick: () => void;
 	text: string;
 	variant?: "primary" | "secondary";
+	className?: string;
 }
 
-function Button({ onClick, text, variant = "primary" }: BtnProps) {
+function Button({
+	onClick,
+	text,
+	variant = "primary",
+	className,
+}: BtnProps) {
 	// Base Styles
 	const base =
 		"py-2 px-5 rounded-lg font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
@@ -18,7 +24,11 @@ function Button({ onClick, text, variant = "primary" }: BtnProps) {
 	};
 
 	return (
-		<button type="button" className={styles[variant]} onClick={onClick}>
+		<button
+			type="button"
+			className={className ? className : styles[variant]}
+			onClick={onClick}
+		>
 			{text}
 		</button>
 	);
