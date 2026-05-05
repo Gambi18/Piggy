@@ -1,19 +1,19 @@
 import { GetTransactionsParamsType, TransactionType } from "@/types/interfaces";
 import axios from "axios";
 
-
 export interface GetTransactionsRes {
 	transactions: TransactionType[];
 	error: unknown;
 }
 
 const BASEURL = "http://localhost:8081";
+
 export const getAllTransactions = async (
 	query: GetTransactionsParamsType,
 ): Promise<GetTransactionsRes> => {
 	const queries = [];
-	if (query.size) {
-		queries.push("size=" + query.size);
+	if (query.userId) {
+		queries.push("userId=" + query.userId);
 	}
 
 	if (query.type) {
@@ -34,10 +34,10 @@ export const getAllTransactions = async (
 			error: null,
 		};
 	} catch (error) {
+		console.error("Error fetching transactions:", error);
 		return {
 			transactions: [],
 			error,
 		};
 	}
 };
-

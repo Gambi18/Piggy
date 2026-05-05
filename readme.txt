@@ -13,5 +13,3 @@ This app does the following:
 8. Allows users to add savings goals
 9. Allows users to view their budgets
 10. Allows users to add budgets
-11. Allows users to view their savings goals
-12. Allows users to add savings goals

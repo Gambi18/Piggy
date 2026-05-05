@@ -31,9 +31,12 @@ function Navbar() {
                         </li>
                     </ul>
                     <div className="flex items-center gap-4 text-sm font-medium">
-                        <button className="text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 transition-colors">
+                        <Link
+                            href="/"
+                            className="text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
+                        >
                             Logout
-                        </button>
+                        </Link>
                     </div>
                 </nav>
             </div>

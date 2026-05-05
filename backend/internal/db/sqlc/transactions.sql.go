@@ -73,6 +73,35 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const getTransactionTotals = `-- name: GetTransactionTotals :many
+SELECT type, SUM(amount) as total FROM transactions WHERE user_id = $1 GROUP BY type
+`
+
+type GetTransactionTotalsRow struct {
+	Type  *string `json:"type"`
+	Total int64   `json:"total"`
+}
+
+func (q *Queries) GetTransactionTotals(ctx context.Context, userID pgtype.UUID) ([]GetTransactionTotalsRow, error) {
+	rows, err := q.db.Query(ctx, getTransactionTotals, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTransactionTotalsRow{}
+	for rows.Next() {
+		var i GetTransactionTotalsRow
+		if err := rows.Scan(&i.Type, &i.Total); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTransactions = `-- name: GetTransactions :many
 SELECT id, user_id, amount, reason, created_at, type FROM transactions WHERE user_id = $1
 `
@@ -104,12 +133,53 @@ func (q *Queries) GetTransactions(ctx context.Context, userID pgtype.UUID) ([]Tr
 	return items, nil
 }
 
+const getUserByID = `-- name: GetUserByID :one
+SELECT id, username, name, email, password, balance FROM users WHERE id = $1
+`
+
+func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Balance,
+	)
+	return i, err
+}
+
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT id, username, name, email, password, balance FROM users WHERE username = $1
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Balance,
+	)
+	return i, err
+}
+
+const updateUserBalance = `-- name: UpdateUserBalance :one
+UPDATE users SET balance = $2 WHERE id = $1 RETURNING id, username, name, email, password, balance
+`
+
+type UpdateUserBalanceParams struct {
+	ID      pgtype.UUID    `json:"id"`
+	Balance pgtype.Numeric `json:"balance"`
+}
+
+func (q *Queries) UpdateUserBalance(ctx context.Context, arg UpdateUserBalanceParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserBalance, arg.ID, arg.Balance)
 	var i User
 	err := row.Scan(
 		&i.ID,

@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 
 	"piggy.com/internal/db/repo"
@@ -17,6 +19,10 @@ import (
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		fmt.Printf("Warning: error loading .env file: %v\n", err)
+	}
+
 	route := gin.Default()
 
 	// Configure Cors
@@ -38,27 +44,33 @@ func main() {
 
 	// Initialize repo and apply migrations
 	ctx := context.Background()
-	dbUrl := "postgres://admin:2323@localhost:5433/piggy?sslmode=disable"
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbName)
 	dbConn, err := pgxpool.New(ctx, dbUrl)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Database connection established!")
-	repostory := repo.NewRepository(dbConn)
+	fmt.Printf("Database connection established to: %s\n", dbUrl)
+	repository := repo.NewRepository(dbConn)
 	if err := repo.MigrateUp(dbUrl, "./internal/db/migrations", zerolog.Nop().With().Logger()); err != nil {
 		panic(err)
 	}
 
 	// Initialize service
-	appService := piggyservice.NewService(repostory)
+	appService := piggyservice.NewService(repository)
 	handlers := handlers.NewHandler(appService)
 
 	// Define application endpoints
 	route.POST("/api/v1/transactions", handlers.CreateTransaction)
-	route.GET("/api/v1/transactions", handlers.GetTransactions) // Run application
+	route.GET("/api/v1/transactions", handlers.GetTransactions)
 	route.POST("/api/v1/signup", handlers.SignUp)
 	route.POST("/api/v1/login", handlers.Login)
-	
+	route.GET("/api/v1/balance", handlers.GetBalance)
+
 	fmt.Println("Server running on port 8081")
 	route.Run(":8081")
 }

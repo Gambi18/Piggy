@@ -9,10 +9,10 @@ type User struct {
 }
 
 type CreateTransactionPayload struct {
-	UserID    string `json:"userId"`
-	Amount    int32  `json:"amount"`
-	Type      string `json:"type"`
-	Reason    string `json:"reason"`
+	UserID string `json:"userId"`
+	Amount int32  `json:"amount"`
+	Type   string `json:"type"`
+	Reason string `json:"reason"`
 }
 
 type Transaction struct {
@@ -38,4 +38,9 @@ type SignUpPayload struct {
 type SignInPayload struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+type UserBalanceResponse struct {
+	Balance          int32 `json:"balance"`
+	TotalSavings     int32 `json:"totalSavings"`
+	TotalWithdrawals int32 `json:"totalWithdrawals"`
 }

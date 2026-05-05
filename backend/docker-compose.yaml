@@ -3,28 +3,32 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: piggy
-      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 2323
       POSTGRES_DB: piggy
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U piggy -d piggy" ]
+      test: [ "CMD-SHELL", "pg_isready -U admin -d piggy" ]
       interval: 5s
       retries: 10
     ports:
       - 5433:5432
-  # api:
-  #   build: .
-  #   restart: unless-stopped
-  #   ports:
-  #     - "${PORT:-3000}:3000"
-  #   env_file: .env
-  #   environment:
-  #     DATABASE_URL: postgresql://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-cameroon_utility_alerts}
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
+  api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8081}:8081"
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: 2323
+      DB_NAME: piggy
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   pgdata:

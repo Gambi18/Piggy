@@ -1,24 +1,25 @@
 "use client";
 import { saveTransaction } from "@/api/create-transaction";
 import Button from "@/components/Button";
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/navmain";
 import { TransactionType } from "@/types/interfaces";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 
 function SavePage() {
 	const router = useRouter();
+	const params = useParams();
 	const [amount, setAmount] = useState("");
 	const [reason, setReason] = useState("");
 	// Handle save transaction
 	const handleSave = async () => {
-		console.log("Executed!");
+		console.log("Executed save action!");
 		const payload: TransactionType = {
-			amount,
+			userId: params.id as string,
+			amount: Number(amount),
 			reason,
 			type: "saving",
-			createdAt: Date(),
 		};
 		const res = await saveTransaction(payload);
 
@@ -26,7 +27,7 @@ function SavePage() {
 
 		if (res.success) {
 			toast("Saving action successful! Redirecting...");
-			router.push("/");
+			router.push(`/dashboard/${params.id}`);
 		} else {
 			toast.error("Failed to save money! Try again.");
 		}

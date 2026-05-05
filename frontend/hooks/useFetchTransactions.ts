@@ -12,7 +12,7 @@ export const useGetTransactions = (query: GetTransactionsParamsType) => {
 		};
 
 		fetchTransactions();
-	}, [query.size, query.type]);
+	}, [query.size, query.type, query.userId]);
 
 	return transactions;
 };

@@ -1,23 +1,25 @@
 "use client";
 import { saveTransaction } from "@/api/create-transaction";
 import Button from "@/components/Button";
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/navmain";
 import { TransactionType } from "@/types/interfaces";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 
 function WithdrawPage() {
 	const router = useRouter();
+	const params = useParams();
 	const [amount, setAmount] = useState("");
 	const [reason, setReason] = useState("");
+	// Handle withdrawal
 	const handleWithdraw = async () => {
-		console.log("Executed!");
+		console.log("Executed Withdrawal action!");
 		const payload: TransactionType = {
-			amount,
+			userId: params.id as string,
+			amount: Number(amount),
 			reason,
 			type: "withdrawal",
-			createdAt: Date(),
 		};
 		const res = await saveTransaction(payload);
 
@@ -25,7 +27,7 @@ function WithdrawPage() {
 
 		if (res.success) {
 			toast("Withdrawal successful! Redirecting...");
-			router.push("/");
+			router.push(`/dashboard/${params.id}`);
 		} else {
 			toast.error("Failed to withdraw money! Try again.");
 		}
