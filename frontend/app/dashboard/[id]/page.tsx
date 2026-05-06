@@ -3,10 +3,15 @@ import StatsCard from "@/components/Card";
 import Navbar from "@/components/navmain";
 import TransactionsList from "@/components/TransactionsList";
 import Button from "@/components/Button";
+import { useRouter, useParams } from "next/navigation";
 import { useGetTransactions } from "@/hooks/useFetchTransactions";
+import { useGetBalance } from "@/hooks/useFetchBalance";
 
 export default function Home() {
-	const recentTransactions = useGetTransactions({ size: 5 });
+	const params = useParams();
+	const router = useRouter();
+	const recentTransactions = useGetTransactions({ userId: params.id as string, size: 5 });
+	const user = useGetBalance({ id: params.id });
 	console.log("In the component: ", recentTransactions);
 	return (
 		<>
@@ -14,24 +19,27 @@ export default function Home() {
 				<Navbar />
 				<main className="flex-1 w-full max-w-3xl mx-auto px-6 py-10 flex flex-col gap-8">
 					<section className="flex gap-4">
-						<StatsCard title="Total Savings" text="53,000 CFA" />
+						<StatsCard title="Total Savings" text={`${user.totalSavings.toLocaleString()} CFA`} />
 						<StatsCard
 							title="Total Withdrawals"
-							text="100,000 CFA"
+							text={`${user.totalWithdrawals.toLocaleString()} CFA`}
 						/>
+					</section>
+					<section className="flex justify-between">
+						<StatsCard title="Balance" text={`${user.balance.toLocaleString()} CFA`} />
 					</section>
 					<section className="flex gap-3">
 						<Button
 							text="Add Savings"
 							onClick={() => {
-								window.location.href = "./save";
+								router.push(`/dashboard/${params.id}/save`);
 							}}
 						/>
 						<Button
 							text="Make Withdrawal"
 							variant="secondary"
 							onClick={() => {
-								window.location.href = "./withdraw";
+								router.push(`/dashboard/${params.id}/withdraw`);
 							}}
 						/>
 					</section>

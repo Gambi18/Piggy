@@ -26,7 +26,7 @@ function LoginPage() {
 
         if (res.success) {
             toast("Login successful! Redirecting...");
-            router.push("/");
+            router.push(`/dashboard/${res.data.id}`);
         } else {
             toast.error("Failed to login! Try again.");
         }
@@ -58,7 +58,7 @@ function LoginPage() {
                                 </label>
                                 <input
                                     className="border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-100"
-                                    placeholder="password"
+                                    placeholder="Password"
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}

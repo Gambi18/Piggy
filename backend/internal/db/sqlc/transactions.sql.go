@@ -7,23 +7,32 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (amount, reason, type) VALUES ($1, $2, $3) RETURNING id, amount, reason, created_at, type
+INSERT INTO transactions (user_id, amount, reason, type) VALUES ($1, $2, $3, $4) RETURNING id, user_id, amount, reason, created_at, type
 `
 
 type CreateTransactionParams struct {
-	Amount string  `json:"amount"`
-	Reason *string `json:"reason"`
-	Type   *string `json:"type"`
+	UserID pgtype.UUID `json:"user_id"`
+	Amount string      `json:"amount"`
+	Reason *string     `json:"reason"`
+	Type   *string     `json:"type"`
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
-	row := q.db.QueryRow(ctx, createTransaction, arg.Amount, arg.Reason, arg.Type)
+	row := q.db.QueryRow(ctx, createTransaction,
+		arg.UserID,
+		arg.Amount,
+		arg.Reason,
+		arg.Type,
+	)
 	var i Transaction
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.Amount,
 		&i.Reason,
 		&i.CreatedAt,
@@ -33,14 +42,15 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (username, name, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, name, email, password
+INSERT INTO users (username, name, email, password, balance) VALUES ($1, $2, $3, $4, $5) RETURNING id, username, name, email, password, balance
 `
 
 type CreateUserParams struct {
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Username string         `json:"username"`
+	Name     string         `json:"name"`
+	Email    string         `json:"email"`
+	Password string         `json:"password"`
+	Balance  pgtype.Numeric `json:"balance"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -49,6 +59,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Name,
 		arg.Email,
 		arg.Password,
+		arg.Balance,
 	)
 	var i User
 	err := row.Scan(
@@ -57,16 +68,50 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Name,
 		&i.Email,
 		&i.Password,
+		&i.Balance,
 	)
 	return i, err
 }
 
-const getTransactions = `-- name: GetTransactions :many
-SELECT id, amount, reason, created_at, type FROM transactions
+const getTransactionTotals = `-- name: GetTransactionTotals :many
+SELECT type, SUM(amount) as total FROM transactions WHERE user_id = $1 GROUP BY type
 `
 
-func (q *Queries) GetTransactions(ctx context.Context) ([]Transaction, error) {
-	rows, err := q.db.Query(ctx, getTransactions)
+type GetTransactionTotalsRow struct {
+	Type  *string `json:"type"`
+	Total int64   `json:"total"`
+}
+
+func (q *Queries) GetTransactionTotals(ctx context.Context, userID pgtype.UUID) ([]GetTransactionTotalsRow, error) {
+	rows, err := q.db.Query(ctx, getTransactionTotals, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTransactionTotalsRow{}
+	for rows.Next() {
+		var i GetTransactionTotalsRow
+		if err := rows.Scan(&i.Type, &i.Total); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransactions = `-- name: GetTransactions :many
+SELECT id, user_id, amount::text as amount, reason, created_at, type FROM transactions WHERE user_id = $1
+`
+
+const getTransactionsByType = `-- name: GetTransactionsByType :many
+SELECT id, user_id, amount::text as amount, reason, created_at, type FROM transactions WHERE user_id = $1 AND type = $2
+`
+
+func (q *Queries) GetTransactions(ctx context.Context, userID pgtype.UUID) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, getTransactions, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +121,7 @@ func (q *Queries) GetTransactions(ctx context.Context) ([]Transaction, error) {
 		var i Transaction
 		if err := rows.Scan(
 			&i.ID,
+			&i.UserID,
 			&i.Amount,
 			&i.Reason,
 			&i.CreatedAt,
@@ -91,8 +137,53 @@ func (q *Queries) GetTransactions(ctx context.Context) ([]Transaction, error) {
 	return items, nil
 }
 
+func (q *Queries) GetTransactionsByType(ctx context.Context, userID pgtype.UUID, transactionType string) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, getTransactionsByType, userID, transactionType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Transaction{}
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Amount,
+			&i.Reason,
+			&i.CreatedAt,
+			&i.Type,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserByID = `-- name: GetUserByID :one
+SELECT id, username, name, email, password, balance FROM users WHERE id = $1
+`
+
+func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Balance,
+	)
+	return i, err
+}
+
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, name, email, password FROM users WHERE username = $1
+SELECT id, username, name, email, password, balance FROM users WHERE username = $1
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
@@ -104,6 +195,30 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Name,
 		&i.Email,
 		&i.Password,
+		&i.Balance,
+	)
+	return i, err
+}
+
+const updateUserBalance = `-- name: UpdateUserBalance :one
+UPDATE users SET balance = $2 WHERE id = $1 RETURNING id, username, name, email, password, balance
+`
+
+type UpdateUserBalanceParams struct {
+	ID      pgtype.UUID    `json:"id"`
+	Balance pgtype.Numeric `json:"balance"`
+}
+
+func (q *Queries) UpdateUserBalance(ctx context.Context, arg UpdateUserBalanceParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserBalance, arg.ID, arg.Balance)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Balance,
 	)
 	return i, err
 }
