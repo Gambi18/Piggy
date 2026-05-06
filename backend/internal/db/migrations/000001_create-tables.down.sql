@@ -1,1 +1,2 @@
-drop table transactions if exists;
+drop table if exists transactions;
+drop table if exists users;
