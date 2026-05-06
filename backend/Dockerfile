@@ -20,7 +20,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o piggy ./cmd/main.go
 
 # Final stage
-FROM alpine:latest
+FROM alpine:3.19
 
 # Install ca-certificates for HTTPS requests
 RUN apk --no-cache add ca-certificates
@@ -33,9 +33,6 @@ WORKDIR /app
 
 # Copy the binary from builder stage
 COPY --from=builder /app/piggy .
-
-# Copy .env file
-COPY .env .
 
 # Make binary executable
 RUN chmod +x ./piggy

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: piggy-api
+    runtime: docker
+    repo: https://github.com/yourusername/piggy
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/healthcheck
+    envVars:
+      - key: FRONTEND_URL
+        value: https://your-frontend-app.onrender.com
+      - fromDatabase:
+          name: piggy-db
+          property: connectionString
+        key: DATABASE_URL

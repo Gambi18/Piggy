@@ -26,8 +26,12 @@ func main() {
 	route := gin.Default()
 
 	// Configure Cors
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:3000" // fallback for local development
+	}
 	route.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{frontendURL, "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -44,12 +48,17 @@ func main() {
 
 	// Initialize repo and apply migrations
 	ctx := context.Background()
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbName)
+
+	// Check for Render's DATABASE_URL first, then fall back to individual env vars
+	dbUrl := os.Getenv("DATABASE_URL")
+	if dbUrl == "" {
+		dbHost := os.Getenv("DB_HOST")
+		dbPort := os.Getenv("DB_PORT")
+		dbUser := os.Getenv("DB_USER")
+		dbPassword := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbUrl = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbName)
+	}
 	dbConn, err := pgxpool.New(ctx, dbUrl)
 	if err != nil {
 		panic(err)
@@ -71,6 +80,10 @@ func main() {
 	route.POST("/api/v1/login", handlers.Login)
 	route.GET("/api/v1/balance", handlers.GetBalance)
 
-	fmt.Println("Server running on port 8081")
-	route.Run(":8081")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081" // fallback for local development
+	}
+	fmt.Printf("Server running on port %s\n", port)
+	route.Run(":" + port)
 }
