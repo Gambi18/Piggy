@@ -34,6 +34,9 @@ WORKDIR /app
 # Copy the binary from builder stage
 COPY --from=builder /app/piggy .
 
+# Copy migration files from builder stage
+COPY --from=builder /app/internal/db/migrations ./internal/db/migrations
+
 # Make binary executable
 RUN chmod +x ./piggy
 
