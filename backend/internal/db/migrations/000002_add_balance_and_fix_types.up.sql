@@ -1,3 +1,0 @@
-ALTER TABLE users ADD COLUMN balance NUMERIC(18,2) NOT NULL DEFAULT 0.00;
-ALTER TABLE transactions ALTER COLUMN amount TYPE NUMERIC(18,2) USING amount::numeric;
-

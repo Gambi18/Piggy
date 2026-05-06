@@ -29,7 +29,7 @@ RUN apk --no-cache add ca-certificates
 RUN addgroup -g 1001 -S piggy && \
     adduser -u 1001 -S piggy -G piggy
 
-WORKDIR /root/
+WORKDIR /app
 
 # Copy the binary from builder stage
 COPY --from=builder /app/piggy .

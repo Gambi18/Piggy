@@ -65,16 +65,22 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 	var transactions *[]models.Transaction
 	var err error
 
-	if query.Type != "" {
-		transactions, err = h.service.GetTransactionsByType(c, query.UserID, query.Type)
+	// If userId is provided, validate it and get user-specific transactions
+	if query.UserID != "" {
+		if query.Type != "" {
+			transactions, err = h.service.GetTransactionsByType(c, query.UserID, query.Type)
+		} else {
+			transactions, err = h.service.GetTransactions(c, query.UserID)
+		}
+		if err != nil {
+			fmt.Printf("GetTransactions failed for user %s: %v\n", query.UserID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	} else {
-		transactions, err = h.service.GetTransactions(c, query.UserID)
-	}
-
-	if err != nil {
-		fmt.Printf("GetTransactions failed for user %s: %v\n", query.UserID, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		// If no userId provided, return empty transactions array (backward compatibility)
+		emptyTransactions := []models.Transaction{}
+		transactions = &emptyTransactions
 	}
 
 	c.JSON(http.StatusOK, transactions)
