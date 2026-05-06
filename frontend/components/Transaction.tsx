@@ -7,11 +7,12 @@ export default function Transaction({ amount, type, reason, createdAt }: Transac
 	const isSaving = type === "saving";
 	// The backend might return createdAt as a string or undefined
 	const formattedDate = createdAt ? new Date(createdAt).toLocaleDateString() : "-";
+	console.log(amount);
 
 	return (
 		<tr className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
 			<td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-				{amount} CFA
+				{amount.toLocaleString()} CFA
 			</td>
 			<td className="py-3 px-4">
 				<span

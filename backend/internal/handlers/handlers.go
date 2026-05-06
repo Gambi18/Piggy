@@ -53,6 +53,7 @@ func (h *Handler) CreateTransaction(c *gin.Context) {
 func (h *Handler) GetTransactions(c *gin.Context) {
 	type queryParams struct {
 		UserID string `form:"userId"`
+		Type   string `form:"type"`
 	}
 	var query queryParams
 
@@ -61,7 +62,15 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 		return
 	}
 
-	transactions, err := h.service.GetTransactions(c, query.UserID)
+	var transactions *[]models.Transaction
+	var err error
+
+	if query.Type != "" {
+		transactions, err = h.service.GetTransactionsByType(c, query.UserID, query.Type)
+	} else {
+		transactions, err = h.service.GetTransactions(c, query.UserID)
+	}
+
 	if err != nil {
 		fmt.Printf("GetTransactions failed for user %s: %v\n", query.UserID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -2,7 +2,10 @@
 INSERT INTO transactions (user_id, amount, reason, type) VALUES ($1, $2, $3, $4) RETURNING *;
 
 -- name: GetTransactions :many
-SELECT * FROM transactions WHERE user_id = $1;
+SELECT id, user_id, amount::text as amount, reason, created_at, type FROM transactions WHERE user_id = $1;
+
+-- name: GetTransactionsByType :many
+SELECT id, user_id, amount::text as amount, reason, created_at, type FROM transactions WHERE user_id = $1 AND type = $2;
 
 -- name: CreateUser :one
 INSERT INTO users (username, name, email, password, balance) VALUES ($1, $2, $3, $4, $5) RETURNING *;

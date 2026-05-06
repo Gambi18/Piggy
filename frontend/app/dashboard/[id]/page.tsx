@@ -19,7 +19,7 @@ export default function Home() {
 				<Navbar />
 				<main className="flex-1 w-full max-w-3xl mx-auto px-6 py-10 flex flex-col gap-8">
 					<section className="flex gap-4">
-						<StatsCard title="Total Savings" text={`${user.totalSavings.toLocaleString()} CFA`}/>
+						<StatsCard title="Total Savings" text={`${user.totalSavings.toLocaleString()} CFA`} />
 						<StatsCard
 							title="Total Withdrawals"
 							text={`${user.totalWithdrawals.toLocaleString()} CFA`}
@@ -34,7 +34,7 @@ export default function Home() {
 							onClick={() => {
 								router.push(`/dashboard/${params.id}/save`);
 							}}
-						/>	
+						/>
 						<Button
 							text="Make Withdrawal"
 							variant="secondary"

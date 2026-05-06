@@ -16,10 +16,10 @@ INSERT INTO transactions (user_id, amount, reason, type) VALUES ($1, $2, $3, $4)
 `
 
 type CreateTransactionParams struct {
-	UserID pgtype.UUID    `json:"user_id"`
-	Amount pgtype.Numeric `json:"amount"`
-	Reason *string        `json:"reason"`
-	Type   *string        `json:"type"`
+	UserID pgtype.UUID `json:"user_id"`
+	Amount string      `json:"amount"`
+	Reason *string     `json:"reason"`
+	Type   *string     `json:"type"`
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
@@ -103,11 +103,42 @@ func (q *Queries) GetTransactionTotals(ctx context.Context, userID pgtype.UUID) 
 }
 
 const getTransactions = `-- name: GetTransactions :many
-SELECT id, user_id, amount, reason, created_at, type FROM transactions WHERE user_id = $1
+SELECT id, user_id, amount::text as amount, reason, created_at, type FROM transactions WHERE user_id = $1
+`
+
+const getTransactionsByType = `-- name: GetTransactionsByType :many
+SELECT id, user_id, amount::text as amount, reason, created_at, type FROM transactions WHERE user_id = $1 AND type = $2
 `
 
 func (q *Queries) GetTransactions(ctx context.Context, userID pgtype.UUID) ([]Transaction, error) {
 	rows, err := q.db.Query(ctx, getTransactions, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Transaction{}
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Amount,
+			&i.Reason,
+			&i.CreatedAt,
+			&i.Type,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+func (q *Queries) GetTransactionsByType(ctx context.Context, userID pgtype.UUID, transactionType string) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, getTransactionsByType, userID, transactionType)
 	if err != nil {
 		return nil, err
 	}
