@@ -5,6 +5,14 @@ import Button from "@/components/Button";
 import { useRouter, useParams } from "next/navigation";
 import { useGetTransactions } from "@/hooks/useFetchTransactions";
 
+export async function generateStaticParams() {
+	return [
+		{ id: '1' },
+		{ id: '2' },
+		{ id: '3' }
+	];
+}
+
 export default function SavingsPage() {
 	const params = useParams();
 	const router = useRouter();

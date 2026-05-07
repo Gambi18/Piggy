@@ -7,6 +7,14 @@ import { useRouter, useParams } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 
+export async function generateStaticParams() {
+	return [
+		{ id: '1' },
+		{ id: '2' },
+		{ id: '3' }
+	];
+}
+
 function WithdrawPage() {
 	const router = useRouter();
 	const params = useParams();
