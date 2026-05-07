@@ -23,6 +23,12 @@ func main() {
 		fmt.Printf("Warning: error loading .env file: %v\n", err)
 	}
 
+	// Debug: Print key environment variables
+	fmt.Printf("DATABASE_URL: %s\n", os.Getenv("DATABASE_URL"))
+	fmt.Printf("PORT: %s\n", os.Getenv("PORT"))
+	fmt.Printf("GIN_MODE: %s\n", os.Getenv("GIN_MODE"))
+	fmt.Printf("FRONTEND_URL: %s\n", os.Getenv("FRONTEND_URL"))
+
 	route := gin.Default()
 
 	// Configure Cors
@@ -61,11 +67,21 @@ func main() {
 	}
 	dbConn, err := pgxpool.New(ctx, dbUrl)
 	if err != nil {
+		fmt.Printf("Failed to create database connection: %v\n", err)
+		fmt.Printf("Database URL: %s\n", dbUrl)
 		panic(err)
 	}
 	fmt.Printf("Database connection established to: %s\n", dbUrl)
 	repository := repo.NewRepository(dbConn)
+
+	// Check if migrations directory exists
+	if _, err := os.Stat("./internal/db/migrations"); os.IsNotExist(err) {
+		fmt.Printf("Migrations directory does not exist: ./internal/db/migrations\n")
+		panic("migrations directory not found")
+	}
+
 	if err := repo.MigrateUp(dbUrl, "./internal/db/migrations", zerolog.Nop().With().Logger()); err != nil {
+		fmt.Printf("Migration failed: %v\n", err)
 		panic(err)
 	}
 

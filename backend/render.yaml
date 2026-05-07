@@ -10,10 +10,10 @@ services:
     envVars:
       - key: PORT
         value: 8081
-      - key: FRONTEND_URL
-        value: https://your-frontend-app.onrender.com
       - key: GIN_MODE
         value: release
+      - key: FRONTEND_URL
+        value: https://your-frontend-app.onrender.com
       - fromDatabase:
           name: piggy-db
           property: connectionString

@@ -1,11 +1,20 @@
 "use client";
+import { Suspense } from "react";
 import TransactionsList from "@/components/TransactionsList";
 import { useGetTransactions } from "@/hooks/useFetchTransactions";
-import { GetTransactionsParamsType, TransactionType } from "@/types/interfaces";
+import { GetTransactionsParamsType } from "@/types/interfaces";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 
-function TransactionsPage() {
+export default function TransactionsPage() {
+	return (
+		<Suspense fallback={<div>Loading transactions...</div>}>
+			<TransactionsPageContent />
+		</Suspense>
+	);
+}
+
+function TransactionsPageContent() {
 	const query = useSearchParams();
 	const type = query.get("type");
 	const filtered = useGetTransactions({
@@ -26,4 +35,3 @@ function TransactionsPage() {
 	);
 }
 
-export default TransactionsPage;
