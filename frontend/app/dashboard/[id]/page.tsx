@@ -7,14 +7,6 @@ import { useRouter, useParams } from "next/navigation";
 import { useGetTransactions } from "@/hooks/useFetchTransactions";
 import { useGetBalance } from "@/hooks/useFetchBalance";
 
-export async function generateStaticParams() {
-	return [
-		{ id: '1' },
-		{ id: '2' },
-		{ id: '3' }
-	];
-}
-
 export default function Home() {
 	const params = useParams();
 	const router = useRouter();
