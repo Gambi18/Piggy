@@ -2,14 +2,18 @@ services:
   - type: web
     name: piggy-api
     runtime: docker
-    repo: https://github.com/yourusername/piggy
+    repo: https://github.com/gambi/piggy
     rootDir: backend
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: Dockerfile
     dockerContext: .
     healthCheckPath: /api/v1/healthcheck
     envVars:
+      - key: PORT
+        value: 8081
       - key: FRONTEND_URL
         value: https://your-frontend-app.onrender.com
+      - key: GIN_MODE
+        value: release
       - fromDatabase:
           name: piggy-db
           property: connectionString
