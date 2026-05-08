@@ -2,7 +2,7 @@
 import React from "react";
 
 export interface BtnProps {
-	onClick: () => void;
+	onClick?: () => void;
 	text: string;
 	variant?: "primary" | "secondary";
 	className?: string;
